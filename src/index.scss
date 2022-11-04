@@ -1,0 +1,196 @@
+@import "nulledstyle.scss";
+
+body {
+  background: rgb(247, 202, 201);
+  /* Old browsers */
+  background: -moz-linear-gradient(-45deg, rgba(247, 202, 201, 1) 0%, rgba(146, 168, 209, 1) 100%);
+  /* FF3.6-15 */
+  background: -webkit-linear-gradient(-45deg, rgba(247, 202, 201, 1) 0%, rgba(146, 168, 209, 1) 100%);
+  /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(135deg, rgba(247, 202, 201, 1) 0%, rgba(146, 168, 209, 1) 100%);
+  /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  /* IE6-9 fallback on horizontal gradient */
+
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+  #root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .header {
+    padding: 20px 10px;
+    .currencies {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      h2 {
+        font-size: 32px;
+        text-align: center;
+      }
+      .currency {
+        width: 33.3%;
+        text-align: center;
+        p {
+          white-space: nowrap;
+        }
+        .material-icons-outlined {
+          font-size: 40px;
+        }
+      }
+    }
+  }
+}
+
+main {
+  padding: 20px 10px;
+  h3 {
+    font-size: 24px;
+    text-align: center;
+  }
+  .convert-block {
+    display: flex;
+    justify-content: center;
+    input {
+      border: 0;
+      border-bottom: 2px solid gray;
+      outline: 0;
+      font-size: 22px;
+      padding: 7px 0;
+      background: transparent;
+      transition: border-color 0.2s;
+      &:focus {
+        border-color: #000;
+      }
+    }
+    select {
+      font-size: 22px;
+      border-width: 0;
+      border-style: none;
+      background-color: transparent;
+    }
+  }
+}
+
+.load-bar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 5px;
+  background-color: #fdba2c;
+  .bar {
+    content: "";
+    display: inline;
+    position: absolute;
+    width: 0;
+    height: 100%;
+    left: 50%;
+    text-align: center;
+    &:nth-child(1) {
+      background-color: #da34a3;
+      animation: loading 3s linear infinite;
+    }
+    &:nth-child(2) {
+      background-color: #3b78e7;
+      animation: loading 3s linear 1s infinite;
+    }
+    &:nth-child(3) {
+      background-color: #da34a3;
+      animation: loading 3s linear 2s infinite;
+    }
+  }
+}
+
+@keyframes loading {
+  from {
+    left: 0;
+    width: 0;
+    z-index: 100;
+  }
+  33.3333% {
+    left: 0;
+    width: 100%;
+    z-index: 10;
+  }
+  to {
+    left: 0;
+    width: 100%;
+  }
+}
+
+@keyframes c-inline-spinner-kf {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.c-inline-spinner {
+  top: 3px;
+  margin: 0 3px;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  transform-origin: 50%;
+  border: 2px solid transparent;
+  border-color: #141414 #515151 transparent transparent;
+  border-radius: 50%;
+  content: "";
+  animation: linear c-inline-spinner-kf 900ms infinite;
+  position: relative;
+  vertical-align: inherit;
+  line-height: inherit;
+
+  &:before {
+    border-color: #000 #2a2a2a transparent transparent;
+    position: absolute;
+    left: -2px;
+    top: -2px;
+    border-style: solid;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    transform-origin: 50%;
+    border: 2px solid transparent;
+    border-color: #141414 #515151 transparent transparent;
+    border-radius: 50%;
+    content: "";
+    animation: linear c-inline-spinner-kf 900ms infinite;
+    position: relative;
+    vertical-align: inherit;
+    line-height: inherit;
+  }
+}
+
+@media only screen and (max-width: 625px) {
+  body {
+    .header {
+      padding: 0 10px;
+      .currencies {
+        flex-direction: column;
+        .currency {
+          width: 100%;
+          padding: 20px 0;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 440px) {
+  main {
+    .convert-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .currency {
+        padding-bottom: 20px;
+      }
+    }
+  }
+}
