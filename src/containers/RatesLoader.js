@@ -1,55 +1,74 @@
 import Header from "../components/Header";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 
 function RatesLoader() {
   const [outputRates, setOutputRates] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const dispatch = useDispatch();
+  const ratesFromState = useSelector((state) => state);
+  const currencies = ["USD", "EUR", "GBP"];
 
   useEffect(() => {
-    setIsLoading(true);
     const rates = {};
     const urlEur = `https://api.getgeoapi.com/v2/currency/convert?api_key=904feae0b722e7df9827cc79d154b91a6975cffc&from=EUR&to=UAH&amount=1&format=json`;
     const urlUsd = `https://api.getgeoapi.com/v2/currency/convert?api_key=904feae0b722e7df9827cc79d154b91a6975cffc&from=USD&to=UAH&amount=1&format=json`;
     const urlGbp = `https://api.getgeoapi.com/v2/currency/convert?api_key=904feae0b722e7df9827cc79d154b91a6975cffc&from=GBP&to=UAH&amount=1&format=json`;
 
     let eurPromise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(urlEur);
-        rates.eur = res.data.rates["UAH"].rate_for_amount;
+      if (ratesFromState["USDUAH"]) {
+        rates.usd = ratesFromState["USDUAH"];
         resolve();
-      } catch (err) {
-        console.error(err);
+      } else {
+        try {
+          const res = await axios.get(urlUsd);
+          rates.usd = Number(res.data.rates["UAH"].rate_for_amount).toFixed(2);
+          dispatch({ type: "ADD_CURRENCY", payload: { USDUAH: rates.usd } });
+          resolve();
+        } catch (err) {
+          console.error(err);
+        }
       }
     });
 
-    let usdPromise2 = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(urlUsd);
-        rates.usd = res.data.rates["UAH"].rate_for_amount;
+    let usdPromise = new Promise(async (resolve, reject) => {
+      if (ratesFromState["EURUAH"]) {
+        rates.eur = ratesFromState["EURUAH"];
         resolve();
-      } catch (err) {
-        console.error(err);
+      } else {
+        try {
+          const res = await axios.get(urlEur);
+          rates.eur = Number(res.data.rates["UAH"].rate_for_amount).toFixed(2);
+          dispatch({ type: "ADD_CURRENCY", payload: { EURUAH: rates.eur } });
+          resolve();
+        } catch (err) {
+          console.error(err);
+        }
       }
     });
 
-    let gbpPromise3 = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(urlGbp);
-        rates.gbp = res.data.rates["UAH"].rate_for_amount;
-        resolve();
-      } catch (err) {
-        console.error(err);
+    let gbpPromise = new Promise(async (resolve, reject) => {
+      if (ratesFromState["GBPUAH"]) {
+        rates.gbp = ratesFromState["GBPUAH"];
+      } else {
+        try {
+          const res = await axios.get(urlGbp);
+          rates.gbp = Number(res.data.rates["UAH"].rate_for_amount).toFixed(2);
+          dispatch({ type: "ADD_CURRENCY", payload: { GBPUAH: rates.gbp } });
+          resolve();
+        } catch (err) {
+          console.error(err);
+        }
       }
     });
 
-    Promise.all([eurPromise, usdPromise2, gbpPromise3]).then(() => {
-      setIsLoading(false);
+    Promise.all([eurPromise, usdPromise, gbpPromise]).then(() => {
       setOutputRates(rates);
     });
   }, []);
 
-  return <Header outputRates={outputRates} isLoading={isLoading} />;
+  return <Header outputRates={outputRates} currencies={currencies} />;
 }
 
 export default RatesLoader;

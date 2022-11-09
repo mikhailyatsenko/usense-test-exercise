@@ -1,47 +1,80 @@
 import Convertation from "../components/Convertation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 
 function Converter() {
   const [isLoading, setIsLoading] = useState(false);
-  const [output1, setOutput1] = useState("");
-  const [output2, setOutput2] = useState("");
+  const [amount1, setAmount1] = useState("");
+  const [amount2, setAmount2] = useState("");
+  const [currency1, setCurrency1] = useState("USD");
+  const [currency2, setCurrency2] = useState("UAH");
+  const [rate, setRate] = useState();
+  const [isAmount1Changed, setIsAmount1Changed] = useState(true);
+  const [isCurrency1Changed, setIsCurrency1Changed] = useState(true);
+  const dispatch = useDispatch();
+  const ratesFromState = useSelector((state) => state);
+  const currencies = ["UAH", "EUR", "USD", "GBP"];
 
-  function convertRequest(event, amount, from, to) {
-    if (amount === "") {
-      setOutput1("");
-      setOutput2("");
-    } else if (event.target.id === "amount1") {
-      setOutput1(event.target.value);
-      getConvertedAmount(event, amount, from, to);
-    } else if (event.target.id === "amount2") {
-      setOutput2(event.target.value);
-      getConvertedAmount(event, amount, from, to);
-    } else if (event.target.id === "currency1" || event.target.id === "currency2") {
-      getConvertedAmount(event, amount, from, to);
-    }
-  }
+  useEffect(() => {
+    const url = `https://api.getgeoapi.com/v2/currency/convert?api_key=904feae0b722e7df9827cc79d154b91a6975cffc&from=${currency1}&to=${currency2}&amount=1&format=json`;
+    let currencyCode = currency1 + currency2;
 
-  async function getConvertedAmount(event, amount, from, to) {
-    setIsLoading(true);
-    const url = `https://api.getgeoapi.com/v2/currency/convert?api_key=904feae0b722e7df9827cc79d154b91a6975cffc&from=${from}&to=${to}&amount=${amount}&format=json`;
-
-    try {
-      const res = await axios.get(url);
-
-      if (event.target.id === "amount1" || event.target.id === "currency1") {
-        setOutput2(res.data.rates[to].rate_for_amount);
-      } else if (event.target.id === "amount2" || event.target.id === "currency2") {
-        setOutput1(res.data.rates[to].rate_for_amount);
+    (async function request() {
+      setIsLoading(true);
+      if (ratesFromState[currencyCode]) {
+        setRate(ratesFromState[currencyCode]);
+        setIsLoading(false);
+      } else {
+        try {
+          const res = await axios.get(url);
+          setRate(res.data.rates[currency2].rate_for_amount);
+          dispatch({ type: "ADD_CURRENCY", payload: { [currencyCode]: res.data.rates[currency2].rate_for_amount } });
+          setIsLoading(false);
+        } catch (err) {
+          console.error(err);
+        }
       }
+    })();
+    if (amount1 || amount2) {
+      if (isCurrency1Changed) {
+        setAmount2(Number(rate * amount1).toFixed(2));
+      } else {
+        setAmount1(Number(amount2 / rate).toFixed(2));
+      }
+    }
+  }, [currency1, currency2, rate]);
 
-      setIsLoading(false);
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if ((amount1 || amount2) && isAmount1Changed) {
+      setAmount2(Number(rate * amount1).toFixed(2));
+    } else if ((amount1 || amount2) && !isAmount1Changed) {
+      setAmount1(Number(amount2 / rate).toFixed(2));
+    }
+  }, [amount1, amount2]);
+
+  function changeCurrency(event) {
+    if (event.target.id === "currency1") {
+      setIsCurrency1Changed(true);
+      setCurrency1(event.target.value);
+    } else {
+      setIsCurrency1Changed(false);
+      setCurrency2(event.target.value);
     }
   }
 
-  return <Convertation convertRequest={convertRequest} output1={output1} output2={output2} isLoading={isLoading} />;
+  function changeAmount(event) {
+    event.target.value = event.target.value.replace(/[^\d.]/g, "");
+    if (event.target.id === "amount1") {
+      setIsAmount1Changed(true);
+      setAmount1(event.target.value);
+    } else {
+      setIsAmount1Changed(false);
+      setAmount2(event.target.value);
+    }
+  }
+
+  return <Convertation currency1={currency1} currency2={currency2} amount1={amount1} amount2={amount2} changeCurrency={changeCurrency} changeAmount={changeAmount} currencies={currencies} isLoading={isLoading} />;
 }
 
 export default Converter;
